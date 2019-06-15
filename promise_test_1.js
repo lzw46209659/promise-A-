@@ -4,33 +4,41 @@
 
 const Promise = require('./promise')
 
-let a = new Promise(function(resolve, reject) {
+const log = val => {
+    console.log(val)
+};
+
+console.log('start')
+console.time('start')
+new Promise(function(resolve, reject) {
     console.time('start1')
     console.time('start2')
+    console.time('start3')
     setTimeout(function() {
         let num = Math.random()
         if (num > .1) {
-            resolve(`成功 ${num}`)
+            resolve(new Promise(function(resolve, reject) {
+                setTimeout(function() {
+                    resolve(11)
+                }, 2000)
+            }))
         } else {
             reject(`出错 ${num}`)
         }
     }, 200)
 
-})
-
-const log = val => {
-    console.log(val)
-};
-
-a.then(null, null).then(function(val) {
+}).then(function(val) {
+    console.timeEnd('start')
     console.log('start1')
-    console.timeEnd('start1')
     console.log(val)
     return new Promise(function(resolve, reject) {
         setTimeout(function() {
+            console.log('x == promise')
             resolve(new Promise(function(resolve, reject) {
                 setTimeout(function() {
-                    resolve('inner')
+                    resolve('y == promise')
+                    console.log('inner')
+                    console.timeEnd('start3')
                 }, 3000)
             }))
         }, 2000)

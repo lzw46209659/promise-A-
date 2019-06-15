@@ -3,6 +3,7 @@
  * data: 2019-06-14
  */
 
+
 const STATE_PENDING = 'pending'
 const STATE_FULFILLED = 'fulfilled'
 const STATE_REJECTED = 'rejected'
@@ -19,7 +20,18 @@ const Promise = function (executor) {
     let self = this
 
     function resolve(value) {
+        /**
+         *  TODO fix bug 与ES6原生promise表现不一致，第一次调用Promise生成示例p1
+         *  且resolve了另一个Promise p2, resolve(11) 的情况下，原生p1的onFulfilled回调会等待p2的resolve后，
+         *  并将p2的resolve结果作为p1的resolve结果传入p1的onFulfilled回调函数执行，但此实现表现为，p1 resolve的
+         *  时候会不做等待，直接将p2作为resolve结果直接执行p1的onFulfilled函数
+         */
+        if (value instanceof Promise) {
+            value.then(resolve, reject)
+            return
+        }
         if (self.state === STATE_PENDING) {
+            // console.log(value)
             self.value = value
             self.state = STATE_FULFILLED
             self.arrOnFulfillCallbacks.forEach(function(cb) {
@@ -46,7 +58,6 @@ const Promise = function (executor) {
 }
 
 function promiseResolution(promise2, x, resolve, reject) {
-
     // console.log('promiseResolution')
     // console.log(x)
     if (promise2 === x) {
